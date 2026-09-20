@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
 import { 
-  getAuth, 
   onAuthStateChanged,
   signOut,
-  GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
 import { 
-  getFirestore, 
   collection, 
   addDoc, 
   deleteDoc, 
@@ -17,7 +13,6 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { 
-  getStorage, 
   ref, 
   uploadBytesResumable, 
   getDownloadURL 
@@ -34,12 +29,15 @@ import {
   FileText
 } from 'lucide-react';
 
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'biocom-institute-app';
+// Backend connection configuration (loads from .env / src/firebase/config.ts)
+import { 
+  auth, 
+  db, 
+  storage, 
+  appId, 
+  googleProvider,
+  isFirebaseConfigured 
+} from './src/firebase/config';
 
 const SUBJECTS = [
   { id: 'accountancy', name: 'Accountancy', icon: Book, color: 'bg-blue-500' },
@@ -69,6 +67,10 @@ export default function AdminApp() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setAdminUser(currentUser);
       setLoading(false);
@@ -77,7 +79,7 @@ export default function AdminApp() {
   }, []);
 
   useEffect(() => {
-    if (!adminUser) return;
+    if (!adminUser || !db) return;
 
     // Listen to Assignments
     const assignmentsRef = collection(db, 'artifacts', appId, 'public', 'data', 'assignments');
@@ -114,16 +116,19 @@ export default function AdminApp() {
 
   const handleAdminGoogleLogin = async () => {
     setAuthError('');
+    if (!auth) {
+      setAuthError('Firebase credentials are not configured. Please add your API keys to .env');
+      return;
+    }
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Admin Login Error:", error);
       setAuthError('Failed to sign in. Ensure Google Auth is enabled.');
     }
   };
 
-  const handleSignOut = () => signOut(auth);
+  const handleSignOut = () => auth && signOut(auth);
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {

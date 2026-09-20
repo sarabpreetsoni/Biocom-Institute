@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Artifacts data collection structure used by Biocom Institute
+    match /artifacts/{appId}/public/data/students/{studentId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == studentId;
+    }
+
+    match /artifacts/{appId}/public/data/assignments/{assignmentId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Direct root collections fallback
+    match /students/{studentId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == studentId;
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}

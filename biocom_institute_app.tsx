@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
 import { 
-  getAuth, 
   signInWithCustomToken, 
   onAuthStateChanged,
   signOut,
-  GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
 import { 
@@ -28,11 +25,14 @@ import {
   User
 } from 'lucide-react';
 
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'biocom-institute-app';
+// Backend connection configuration (loads from .env / src/firebase/config.ts)
+import { 
+  auth, 
+  db, 
+  appId, 
+  googleProvider,
+  isFirebaseConfigured 
+} from './src/firebase/config';
 
 const SUBJECTS = [
   { id: 'accountancy', name: 'Accountancy', icon: Book, color: 'bg-blue-500' },
@@ -56,6 +56,11 @@ export default function App() {
   const [authError, setAuthError] = useState('');
 
   useEffect(() => {
+    if (!auth || !db) {
+      setLoading(false);
+      return;
+    }
+
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -118,7 +123,7 @@ export default function App() {
     return () => unsubscribe();
   }, [user]);
 
-  const handleSignOut = () => signOut(auth);
+  const handleSignOut = () => auth && signOut(auth);
 
   const openSubject = (subject) => {
     setSelectedSubject(subject);
@@ -132,9 +137,12 @@ export default function App() {
 
   const handleGoogleSignIn = async () => {
     setAuthError('');
+    if (!auth || !db) {
+      setAuthError('Firebase credentials are not configured. Please add your API keys to .env');
+      return;
+    }
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, googleProvider);
       const authenticatedUser = result.user;
       
       // Save/Update user info to the 'students' collection in backend
