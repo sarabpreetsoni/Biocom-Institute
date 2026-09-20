@@ -57,12 +57,13 @@ CREATE TABLE IF NOT EXISTS public.assignments (
 
 ALTER TABLE public.assignments ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Allow public read assignments"        ON public.assignments;
+DROP POLICY IF EXISTS "Allow public read assignments"           ON public.assignments;
+DROP POLICY IF EXISTS "Allow read assignments"                   ON public.assignments;
 DROP POLICY IF EXISTS "Authenticated users can read assignments" ON public.assignments;
-DROP POLICY IF EXISTS "Allow public insert assignments"      ON public.assignments;
-DROP POLICY IF EXISTS "Allow insert assignments"             ON public.assignments;
-DROP POLICY IF EXISTS "Allow public delete assignments"      ON public.assignments;
-DROP POLICY IF EXISTS "Allow delete assignments"             ON public.assignments;
+DROP POLICY IF EXISTS "Allow public insert assignments"          ON public.assignments;
+DROP POLICY IF EXISTS "Allow insert assignments"                 ON public.assignments;
+DROP POLICY IF EXISTS "Allow public delete assignments"          ON public.assignments;
+DROP POLICY IF EXISTS "Allow delete assignments"                 ON public.assignments;
 
 CREATE POLICY "Allow read assignments"
     ON public.assignments FOR SELECT USING (true);

@@ -100,7 +100,15 @@ export const dataService = {
           options: { data: { full_name: name } }
         });
 
-        if (authError) return { student: null, error: authError.message };
+        if (authError) {
+          if (authError.message.toLowerCase().includes('rate limit')) {
+            return {
+              student: null,
+              error: 'Email rate limit exceeded. Please disable "Confirm email" in Supabase (Authentication > Providers > Email) so students can sign up instantly without email restrictions.'
+            };
+          }
+          return { student: null, error: authError.message };
+        }
         if (!authData.user) return { student: null, error: 'Sign up failed. Please try again.' };
 
         // 2. Insert student profile linked to auth UUID
