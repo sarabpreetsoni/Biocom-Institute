@@ -63,12 +63,6 @@ export const StudentPortal: React.FC = () => {
     setIsLoginView(false);
   };
 
-  const handleQuickDemoStudent = async () => {
-    const demo = await dataService.registerStudent('Sarabpreet Soni', 'student@biocom.edu');
-    localStorage.setItem('biocom_active_student', JSON.stringify(demo));
-    setStudent(demo);
-    setIsLoginView(false);
-  };
 
   const handleSignOut = () => {
     localStorage.removeItem('biocom_active_student');
@@ -136,14 +130,6 @@ export const StudentPortal: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <button
-              onClick={handleQuickDemoStudent}
-              className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold p-2.5 rounded-xl transition"
-            >
-              ⚡ Instant 1-Click Demo Login
-            </button>
-          </div>
 
           <p className="text-xs text-slate-400 mt-6 text-center leading-relaxed">
             Free commerce education for all. Access study notes, problem sets, and practical assignments.

@@ -8,18 +8,14 @@ import {
   Shield,
   CheckCircle,
   AlertCircle,
-  LogOut,
-  ArrowRight
+  LogOut
 } from 'lucide-react';
 import { SUBJECTS } from './StudentPortal';
 import { dataService, Assignment, Student } from '../services/dataService';
 
+
 export const AdminPortal: React.FC = () => {
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
-  const [authError, setAuthError] = useState<string>('');
-  
+
   const [activeTab, setActiveTab] = useState<'assignments' | 'students'>('assignments');
   
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -35,13 +31,11 @@ export const AdminPortal: React.FC = () => {
 
   const [isUploading, setIsUploading] = useState(false);
 
+
   useEffect(() => {
-    const session = localStorage.getItem('biocom_admin_session');
-    if (session) {
-      setIsAdminLoggedIn(true);
-    }
     refreshData();
   }, []);
+
 
   const refreshData = async () => {
     const [assigns, studs] = await Promise.all([
@@ -57,28 +51,12 @@ export const AdminPortal: React.FC = () => {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError('');
-
-    if (adminEmail === 'admin@biocom.edu' && adminPassword === 'admin123') {
-      localStorage.setItem('biocom_admin_session', 'true');
-      setIsAdminLoggedIn(true);
-    } else {
-      // Allow flexible demo login
-      localStorage.setItem('biocom_admin_session', 'true');
-      setIsAdminLoggedIn(true);
-    }
-  };
-
-  const handleQuickDemoAdmin = () => {
-    localStorage.setItem('biocom_admin_session', 'true');
-    setIsAdminLoggedIn(true);
-  };
 
   const handleSignOut = () => {
-    localStorage.removeItem('biocom_admin_session');
-    setIsAdminLoggedIn(false);
+    // Delegate logout to the AdminPage session manager
+    if ((window as any).__biocomAdminLogout) {
+      (window as any).__biocomAdminLogout();
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,71 +100,6 @@ export const AdminPortal: React.FC = () => {
     await refreshData();
     showNotification('Assignment removed.', 'success');
   };
-
-  if (!isAdminLoggedIn) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900 text-white p-8 rounded-2xl shadow-2xl border border-slate-800 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600/20 text-blue-400 rounded-2xl mb-4 border border-blue-500/30">
-            <Shield size={32} />
-          </div>
-          <h1 className="text-2xl font-bold mb-1">Admin Dashboard</h1>
-          <p className="text-slate-400 text-sm mb-6">Manage study materials & enrolled students</p>
-
-          {authError && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded-lg text-xs mb-6 text-left">
-              {authError}
-            </div>
-          )}
-
-          <form onSubmit={handleAdminLogin} className="space-y-4 text-left">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Admin Email
-              </label>
-              <input
-                type="email"
-                value={adminEmail}
-                onChange={(e) => setAdminEmail(e.target.value)}
-                placeholder="admin@biocom.edu"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3.5 rounded-xl transition flex items-center justify-center space-x-2 shadow-md active:scale-[0.99]"
-            >
-              <span>Login as Administrator</span>
-              <ArrowRight size={16} />
-            </button>
-          </form>
-
-          <div className="mt-4 pt-4 border-t border-slate-800">
-            <button
-              onClick={handleQuickDemoAdmin}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold p-2.5 rounded-xl transition"
-            >
-              ⚡ Instant 1-Click Demo Admin Login
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800">
