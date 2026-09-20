@@ -47,21 +47,24 @@ export const StudentPortal: React.FC = () => {
         setIsLoginView(true);
       }
     }
-    setAssignments(dataService.getAssignments());
+    
+    dataService.getAssignments().then((res) => {
+      setAssignments(res);
+    });
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nameInput.trim() || !emailInput.trim()) return;
 
-    const registered = dataService.registerStudent(nameInput.trim(), emailInput.trim());
+    const registered = await dataService.registerStudent(nameInput.trim(), emailInput.trim());
     localStorage.setItem('biocom_active_student', JSON.stringify(registered));
     setStudent(registered);
     setIsLoginView(false);
   };
 
-  const handleQuickDemoStudent = () => {
-    const demo = dataService.registerStudent('Sarabpreet Soni', 'student@biocom.edu');
+  const handleQuickDemoStudent = async () => {
+    const demo = await dataService.registerStudent('Sarabpreet Soni', 'student@biocom.edu');
     localStorage.setItem('biocom_active_student', JSON.stringify(demo));
     setStudent(demo);
     setIsLoginView(false);

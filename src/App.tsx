@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { StudentPortal } from './components/StudentPortal';
 import { AdminPortal } from './components/AdminPortal';
-import { GraduationCap, ShieldCheck } from 'lucide-react';
+import { GraduationCap, ShieldCheck, Database } from 'lucide-react';
+import { isSupabaseConfigured } from './services/supabase';
 
 export default function App() {
   const [activePortal, setActivePortal] = useState<'student' | 'admin'>('student');
@@ -26,31 +27,56 @@ export default function App() {
               </div>
             </div>
 
-            {/* Portal Switcher Tabs */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button
-                onClick={() => setActivePortal('student')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  activePortal === 'student'
-                    ? 'bg-white text-blue-700 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+            {/* Right: Status Pill & Portal Switcher Tabs */}
+            <div className="flex items-center space-x-3">
+              {/* Supabase Connection Status Badge */}
+              <div
+                className={`hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border ${
+                  isSupabaseConfigured
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-slate-100 text-slate-600 border-slate-200'
                 }`}
+                title={
+                  isSupabaseConfigured
+                    ? 'Connected to live Supabase project'
+                    : 'Running in Local Storage mode. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to connect live.'
+                }
               >
-                <GraduationCap size={16} />
-                <span>Student Portal</span>
-              </button>
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isSupabaseConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                  }`}
+                />
+                <Database size={12} />
+                <span>{isSupabaseConfigured ? 'Supabase Connected' : 'Local Mode'}</span>
+              </div>
 
-              <button
-                onClick={() => setActivePortal('admin')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  activePortal === 'admin'
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <ShieldCheck size={16} />
-                <span>Admin Portal</span>
-              </button>
+              {/* Portal Switcher Tabs */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <button
+                  onClick={() => setActivePortal('student')}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    activePortal === 'student'
+                      ? 'bg-white text-blue-700 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <GraduationCap size={16} />
+                  <span>Student Portal</span>
+                </button>
+
+                <button
+                  onClick={() => setActivePortal('admin')}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    activePortal === 'admin'
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <ShieldCheck size={16} />
+                  <span>Admin Portal</span>
+                </button>
+              </div>
             </div>
 
           </div>

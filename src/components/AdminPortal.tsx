@@ -33,6 +33,8 @@ export const AdminPortal: React.FC = () => {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [isUploading, setIsUploading] = useState(false);
+
   useEffect(() => {
     const session = localStorage.getItem('biocom_admin_session');
     if (session) {
@@ -41,9 +43,13 @@ export const AdminPortal: React.FC = () => {
     refreshData();
   }, []);
 
-  const refreshData = () => {
-    setAssignments(dataService.getAssignments());
-    setStudents(dataService.getStudents());
+  const refreshData = async () => {
+    const [assigns, studs] = await Promise.all([
+      dataService.getAssignments(),
+      dataService.getStudents()
+    ]);
+    setAssignments(assigns);
+    setStudents(studs);
   };
 
   const showNotification = (message: string, type: 'success' | 'error') => {
@@ -81,35 +87,39 @@ export const AdminPortal: React.FC = () => {
     }
   };
 
-  const handleAddAssignment = (e: React.FormEvent) => {
+  const handleAddAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || !selectedFile) {
       showNotification('Please fill in all fields and choose a file.', 'error');
       return;
     }
 
-    const fileBlobUrl = URL.createObjectURL(selectedFile);
+    setIsUploading(true);
+    try {
+      await dataService.addAssignment({
+        title: title.trim(),
+        description: description.trim(),
+        subjectId,
+        fileName: selectedFile.name
+      }, selectedFile);
 
-    dataService.addAssignment({
-      title: title.trim(),
-      description: description.trim(),
-      subjectId,
-      fileName: selectedFile.name,
-      fileUrl: fileBlobUrl
-    });
-
-    refreshData();
-    setTitle('');
-    setDescription('');
-    setSelectedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    showNotification('New assignment published successfully!', 'success');
+      await refreshData();
+      setTitle('');
+      setDescription('');
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      showNotification('New assignment published successfully!', 'success');
+    } catch (err: any) {
+      showNotification('Failed to upload assignment: ' + err.message, 'error');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleDeleteAssignment = (id: string) => {
+  const handleDeleteAssignment = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this assignment?')) return;
-    dataService.deleteAssignment(id);
-    refreshData();
+    await dataService.deleteAssignment(id);
+    await refreshData();
     showNotification('Assignment removed.', 'success');
   };
 
@@ -332,9 +342,22 @@ export const AdminPortal: React.FC = () => {
 
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold p-3 rounded-xl transition shadow-sm active:scale-[0.99]"
+                    disabled={isUploading}
+                    className={`w-full text-white text-sm font-semibold p-3 rounded-xl transition shadow-sm active:scale-[0.99] flex items-center justify-center ${
+                      isUploading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
                   >
-                    Publish Assignment
+                    {isUploading ? (
+                      <span className="flex items-center space-x-2">
+                        <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Uploading & Publishing...</span>
+                      </span>
+                    ) : (
+                      'Publish Assignment'
+                    )}
                   </button>
                 </form>
               </div>
