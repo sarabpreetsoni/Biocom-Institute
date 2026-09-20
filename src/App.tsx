@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
 import { StudentPortal } from './components/StudentPortal';
 import { AdminPortal } from './components/AdminPortal';
-import { FirebaseStatusBanner } from './components/FirebaseStatusBanner';
-import { isFirebaseConfigured } from './firebase/config';
 import { GraduationCap, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const [activePortal, setActivePortal] = useState<'student' | 'admin'>('student');
-  const [useDemoMode, setUseDemoMode] = useState<boolean>(!isFirebaseConfigured);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 selection:bg-blue-100 selection:text-blue-900">
-      {/* Firebase Connection & Status Bar */}
-      <FirebaseStatusBanner
-        useDemoMode={useDemoMode}
-        onToggleDemoMode={(val) => setUseDemoMode(val)}
-      />
-
       {/* Global Navigation Switcher */}
       <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,9 +60,9 @@ export default function App() {
       {/* Portal Container */}
       <div className="flex-1">
         {activePortal === 'student' ? (
-          <StudentPortal useDemoMode={useDemoMode} />
+          <StudentPortal />
         ) : (
-          <AdminPortal useDemoMode={useDemoMode} />
+          <AdminPortal />
         )}
       </div>
     </div>
